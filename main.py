@@ -2,6 +2,9 @@ import click
 import random
 from repository import Repository
 
+def has_pull_request():
+	return True
+
 pass_repository = click.make_pass_decorator(Repository, ensure=True)
 
 @click.group()
@@ -28,12 +31,11 @@ def move(repository, feature_name):
 	repository.move_to_feature(feature_name)
 
 @cr.command(short_help="Creates/updates a pull request for feature")
-@click.argument("feature_name", required=False)
-@click.option("--title", "-t", prompt="Title of pull request")
+@click.option("--title", "-t", prompt=not has_pull_request())
 @click.option('--hotfix', is_flag=True)
 @pass_repository
-def review(repository, feature_name, title, hotfix):
-	repository.review_feature(feature_name, title, hotfix)
+def review(repository, title, hotfix):
+	repository.review_feature(title, hotfix)
 
 @cr.command(short_help="Push changes of a feature to server")
 @click.argument("feature_name", required=False)

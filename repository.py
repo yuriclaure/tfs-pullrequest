@@ -26,10 +26,8 @@ class Repository:
 		self.__assert_branch_exists(feature_name)
 		print("MOVING TO FEATURE " + str(feature_name))
 
-	def review_feature(self, feature_name, title, hotfix):
-		if not feature_name: 
-			feature_name = self.__current_branch_name()
-		print("REVIEW FEATURE " + str(title) + " ON BRANCH " + feature_name + (" AS HOTFIX" if hotfix else ""))
+	def review_feature(self, title, hotfix):
+		print("REVIEW FEATURE " + str(title) + " ON BRANCH " + self.__current_branch_name() + (" AS HOTFIX" if hotfix else ""))
 
 	def share_feature(self, feature_name):
 		if not feature_name: 
