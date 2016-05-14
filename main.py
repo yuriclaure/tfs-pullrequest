@@ -1,16 +1,18 @@
 import click
 import random
 from repository import Repository
+from git import Repo
 
 def has_pull_request():
 	return True
 
-pass_repository = click.make_pass_decorator(Repository, ensure=True)
+pass_repository = click.make_pass_decorator(Repository)
 
 @click.group()
 @click.version_option('1.0', prog_name="Code review")
-def cr():
-	pass
+@click.pass_context
+def cr(ctx):
+	ctx.obj = Repository(Repo('.'))
 
 @cr.command(short_help="List, create, or finish a feature")
 @click.argument("feature_name", required=False)

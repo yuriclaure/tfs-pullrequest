@@ -4,15 +4,16 @@ import click
 
 class Repository:
 
+	def __init__(self, git):
+		self.git = git
+
 	def create_feature(self, feature_name):
 		self.__assert_branch_does_not_exists(feature_name)
-		print("CREATE FEATURE " + str(feature_name))
-		#current_branch = repo.head
-		#nova_branch = repo.create_head(feature_name)
-		#current_branch.reset(commit="origin/master", working_tree=True)
-		
-		#TODO: salvar title da pull request pra usar quando for mandar pro servidor
-		#repo.head.reference = nova_branch
+		self.git.git.checkout('master')
+		self.git.git.branch(feature_name)
+		self.git.head.reset(commit="origin/master", working_tree=True)
+		self.git.git.checkout(feature_name)
+		click.echo("New feature created successfully")
 
 	def list_features(self):
 		print("LIST")
@@ -53,4 +54,7 @@ class Repository:
 		return "master"
 
 	def __branch_exists(self, feature_name):
+		for head in self.git.heads:
+			if head.name == feature_name:
+				return True
 		return False
