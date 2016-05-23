@@ -4,15 +4,16 @@ import click
 
 class Repository:
 
-	def __init__(self, git):
-		self.git = git
+	def __init__(self, repo):
+		self.repo = repo
+		self.git = repo.git
 
 	def create_feature(self, feature_name):
 		self.__assert_branch_does_not_exists(feature_name)
-		self.git.git.checkout('master')
-		self.git.git.branch(feature_name)
-		self.git.head.reset(commit="origin/master", working_tree=True)
-		self.git.git.checkout(feature_name)
+		self.git.checkout('master')
+		self.git.branch(feature_name)
+		self.repo.head.reset(commit="origin/master", working_tree=True)
+		self.git.checkout(feature_name)
 		click.echo("New feature created successfully")
 
 	def list_features(self):
@@ -54,7 +55,7 @@ class Repository:
 		return "master"
 
 	def __branch_exists(self, feature_name):
-		for head in self.git.heads:
+		for head in self.repo.heads:
 			if head.name == feature_name:
 				return True
 		return False
