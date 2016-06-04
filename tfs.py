@@ -1,12 +1,21 @@
 import requests
 from requests_ntlm import HttpNtlmAuth
+import settings
 
 class Tfs():
 
-	@staticmethod
-	def call():
-		url = 'http://tfs.digithobrasil.net:8080/tfs/DigithoBrasil/Solu%C3%A7%C3%B5es%20em%20Software/_apis/git/repositories?api-version={version}'
-		output = requests.get(url, auth=HttpNtlmAuth('DGTBR\\yuriclaure',''))
-		print(output.content)
+	baseUrl = 'http://tfs.digithobrasil.net:8080/tfs/DigithoBrasil'
+	auth = HttpNtlmAuth('DGTBR\\yuriclaure','')
 
-Tfs.call()
+	@staticmethod
+	def get_pull_request_status(repository_name, feature_name = 'all'):
+		response = requests.get(Tfs.baseUrl + '/_apis/git/repositories/' + settings.repo_id[repository_name] +'/pullRequests?api-version=2.0', auth=Tfs.auth)
+		list_of_pull_requests = response.json()["value"]
+		pull_request_status = {}
+		for pull_request in list_of_pull_requests:
+			pull_request_status[pull_request["sourceRefName"].split('/')[-1]] = pull_request["status"]
+
+		if feature_name == 'all':
+			return pull_request_status
+		else:
+			return pull_request_status[feature_name] if feature_name in pull_request_status else None
