@@ -43,16 +43,14 @@ def review(repository, title, hotfix):
 	repository.review_feature(title, hotfix)
 
 @cr.command(short_help="Push changes of a feature to server")
-@click.argument("feature_name", required=False)
 @pass_repository
-def share(repository, feature_name):
-	repository.share_feature(feature_name)
+def share(repository):
+	repository.share_feature()
 
 @cr.command(short_help="Pull changes from master into feature")
-@click.argument("feature_name", required=False)
 @pass_repository
-def update(repository, feature_name):
-	repository.update_feature(feature_name)
+def update(repository):
+	repository.update_feature()
 
 if __name__ == '__main__':
 	cr()

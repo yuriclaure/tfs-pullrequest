@@ -41,21 +41,21 @@ class Repository:
 		print("FINISH FEATURE " + str(feature_name))
 
 	def move_to_feature(self, feature_name):
+		self.__assert_is_not_dirty()
 		self.__assert_branch_exists(feature_name)
-		print("MOVING TO FEATURE " + str(feature_name))
+		print(self.git.checkout(feature_name))
 
 	def review_feature(self, title, hotfix):
 		print("REVIEW FEATURE " + str(title) + " ON BRANCH " + self.__current_branch_name() + (" AS HOTFIX" if hotfix else ""))
 
-	def share_feature(self, feature_name):
-		if not feature_name: 
-			feature_name = self.__current_branch_name()
-		print("SHARE FEATURE " + str(feature_name))
+	def share_feature(self):
+		current_branch = self.__current_branch_name()
+		if (current_branch == "master"):
+			raise click.UsageError("You cannot push changes on master")
+		print(self.git.push("--set-upstream", "origin", current_branch))
 
-	def update_feature(self, feature_name):
-		if not feature_name: 
-			feature_name = self.__current_branch_name()
-		print("UPDATE FEATURE " + str(feature_name))
+	def update_feature(self):
+		print(self.git.pull("origin", "master"))
 
 	def __assert_is_not_dirty(self):
 		if self.repo.is_dirty():
