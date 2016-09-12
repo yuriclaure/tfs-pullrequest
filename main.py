@@ -2,6 +2,9 @@ import click
 import random
 from repository import Repository
 import git
+from checks import Checks
+from configuration import Configuration
+import os
 
 def has_pull_request():
 	return False
@@ -13,7 +16,10 @@ pass_repository = click.make_pass_decorator(Repository)
 @click.pass_context
 def cr(ctx):
 	try:
-		ctx.obj = Repository(git.Repo('.'))
+		if (not os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + "/settings.py")):
+			ctx.invoke(configure)
+		repo = git.Repo('.')
+		ctx.obj = Repository(repo, Checks(repo))
 	except git.exc.InvalidGitRepositoryError:
 		raise click.UsageError("You're not on a valid git repository")
 
@@ -51,6 +57,16 @@ def share(repository):
 @pass_repository
 def update(repository):
 	repository.update_feature()
+
+@cr.command(short_help="Edit instalation configuration")
+#@click.option("--url", prompt=True)
+#@click.option("--username", "-u", prompt=True)
+#@click.option("--password", "-p", prompt=True)
+def configure(): # url, username, password):
+	url = "http://tfs01:8080/tfs/DigithoBrasil/Solu%C3%A7%C3%B5es%20em%20Software"
+	username = "yuriclaure"
+	password = ""
+	Configuration.load_configurations_from(url, username, password)
 
 if __name__ == '__main__':
 	cr()
