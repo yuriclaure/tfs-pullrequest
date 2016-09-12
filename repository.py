@@ -11,11 +11,10 @@ class Repository:
 		self.git = repo.git
 
 	def create_feature(self, feature_name):
+		self.__assert_is_not_dirty()
 		self.__assert_branch_does_not_exists(feature_name)
-		self.git.checkout('master')
-		self.git.branch(feature_name)
+		self.git.checkout("-B", feature_name, "master")
 		self.repo.head.reset(commit="origin/master", working_tree=True)
-		self.git.checkout(feature_name)
 		click.echo("New feature created successfully")
 
 	def list_features(self):
@@ -58,22 +57,24 @@ class Repository:
 			feature_name = self.__current_branch_name()
 		print("UPDATE FEATURE " + str(feature_name))
 
-	def __assert_branch_does_not_exists(self, value):
-		if self.__branch_exists(value):
-			raise click.UsageError("Branch name " + value + " already assigned to another feature")
-		return value
+	def __assert_is_not_dirty(self):
+		if self.repo.is_dirty():
+			raise click.UsageError("You have uncommited changes, please commit or stash them before continuing")
 
-	def __assert_branch_exists(self, value):
-		if not self.__branch_exists(value):
-			raise click.UsageError("Couldn't find feature with branch name " + value)
-		return value
+	def __assert_branch_does_not_exists(self, branch):
+		if self.__branch_exists(branch):
+			raise click.UsageError("Branch name " + branch + " already assigned to another feature")
+
+	def __assert_branch_exists(self, branch):
+		if not self.__branch_exists(branch):
+			raise click.UsageError("Couldn't find feature with branch name " + branch)
 
 	def __current_branch_name(self):
-		return "master"
+		return self.repo.head.ref.name
 
-	def __branch_exists(self, feature_name):
+	def __branch_exists(self, branch):
 		for head in self.repo.heads:
-			if head.name == feature_name:
+			if head.name == branch:
 				return True
 		return False
 

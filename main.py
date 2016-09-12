@@ -1,10 +1,10 @@
 import click
 import random
 from repository import Repository
-from git import Repo
+import git
 
 def has_pull_request():
-	return True
+	return False
 
 pass_repository = click.make_pass_decorator(Repository)
 
@@ -12,7 +12,10 @@ pass_repository = click.make_pass_decorator(Repository)
 @click.version_option('1.0', prog_name="Code review")
 @click.pass_context
 def cr(ctx):
-	ctx.obj = Repository(Repo('.'))
+	try:
+		ctx.obj = Repository(git.Repo('.'))
+	except git.exc.InvalidGitRepositoryError:
+		raise click.UsageError("You're not on a valid git repository")
 
 @cr.command(short_help="List, create, or finish a feature")
 @click.argument("feature_name", required=False)
