@@ -1,5 +1,8 @@
-from git import Repo
 import click
+from git import Repo
+from utils import Utils
+from tfs import *
+from tabulate import tabulate
 
 class Repository:
 
@@ -15,21 +18,16 @@ class Repository:
 		self.git.checkout("master")
 		self.repo.head.reset(commit="origin/master", working_tree=True)
 		self.git.checkout(feature_name)
+
 		click.echo("New feature created successfully")
 
 	def list_features(self):
-		# Listar todas as branches, e ver o status dela, que pode ser:
-		# 1 - Criada mas nao existe no servidor ainda
-		# 2 - Existe no servidor mais ainda nao tem pull request
-		# 3 - Pull request em analise
-		# 4 - Pull request mergeada
+		features = [head.name for head in filter(lambda h: h.name != "master", self.repo.heads)]
+		pull_request_details = Tfs.get_pull_request_details(self.checks.current_repo_name(), features)
 
-		# Feature	-	Branch status	-	Code review status
-		# branch1	-	Only local
-		# branch3	-	On remote		-	Reviewing
-		# branch2	-	On remote		-	Completed
+		table_of_features = [["[" + pr_detail[1]["status"].describe() + "]", pr_detail[0], pr_detail[1]["title"]] for pr_detail in pull_request_details]
 
-		print("LIST")
+		Utils.print_encoded(tabulate(table_of_features, headers=["Status", "Branch", "Pull request title"]))		
 
 	def finish_feature(self, feature_name):
 		# Deletar a branch no local
@@ -41,21 +39,35 @@ class Repository:
 	def move_to_feature(self, feature_name):
 		self.checks.assert_is_not_dirty()
 		self.checks.assert_branch_exists(feature_name)
-		print(self.git.checkout(feature_name))
+		click.echo(self.git.checkout(feature_name))
 
 	def review_feature(self, title, hotfix):
 		current_branch = self.checks.current_branch_name()
-		if (current_branch == "master"):
-			self.create_feature(self.checks.convert_to_string_separated_by_underscore(title))
-		
-		print("REVIEW FEATURE " + str(title) + " ON BRANCH " + self.checks.current_branch_name() + (" AS HOTFIX" if hotfix else ""))
+		if current_branch == "master":
+			current_branch = Utils.create_branch_name_from_title(title)
+			self.create_feature(current_branch)
 
-	def share_feature(self):
+		self.share_feature(silent=True)
+		pull_request_details = Tfs.get_pull_request_details(self.checks.current_repo_name(), [current_branch])
+		if pull_request_details[0][1]["status"] != PullRequestStatus.ON_REVIEW:
+			response = Tfs.create_pull_request(self.checks.current_repo_name(), current_branch, title)
+			if response.status_code == 201:
+				click.echo("Pull request successfully created")
+			else:
+				raise click.ClickException("Request error - HTTP_CODE: " + str(response.status_code) + "\n\n" + response.json()["message"])
+		else:
+			click.echo("Pull request successfully updated")
+
+	def share_feature(self, silent=False):
 		current_branch = self.checks.current_branch_name()
-		if (current_branch == "master"):
+		if current_branch == "master":
 			raise click.UsageError("You cannot push changes on master")
-		print(self.git.push("--set-upstream", "origin", current_branch))
+		output = self.git.push("--set-upstream", "origin", current_branch)
+		if not silent:
+			click.echo(output)
 
-	def update_feature(self):
-		print(self.git.pull("origin", "master"))
+	def update_feature(self, silent=False):
+		output = self.git.pull("origin", "master")
+		if not silent:
+			click.echo(output)
 

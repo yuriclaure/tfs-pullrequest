@@ -1,7 +1,6 @@
-from git import Repo
 import click
 
-class Checks:
+class RepositoryChecks:
 
 	def __init__(self, repo):
 		self.repo = repo
@@ -19,14 +18,17 @@ class Checks:
 		if not self.branch_exists(branch):
 			raise click.UsageError("Couldn't find feature with branch name " + branch)
 
-	def current_branch_name(self):
-		return self.repo.head.ref.name
-
 	def branch_exists(self, branch):
 		for head in self.repo.heads:
 			if head.name == branch:
 				return True
 		return False
 
-	def convert_to_string_separated_by_underscore(self, string):
-		return string.lower().replace(" ", "_")
+	def current_branch_name(self):
+		return self.repo.head.ref.name
+
+	def current_repo_name(self):
+		remoteUrl = self.git.config("remote.origin.url")
+		remoteUrl = remoteUrl[:-1] if remoteUrl.endswith("/") else remoteUrl
+		return remoteUrl.split("/")[-1].lower()
+

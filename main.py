@@ -1,10 +1,11 @@
 import click
 import random
-from repository import Repository
 import git
-from checks import Checks
-from configuration import Configuration
 import os
+from repository_checks import RepositoryChecks
+from repository import Repository
+from configuration import Configuration
+from utils import Utils
 
 def has_pull_request():
 	return False
@@ -16,11 +17,11 @@ pass_repository = click.make_pass_decorator(Repository)
 @click.pass_context
 def cr(ctx):
 	try:
-		if (not os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + "/settings.py")):
+		if (not Utils.file_exists("settings.py")):
 			click.echo("Please inform your TFS' information\n")
 			ctx.invoke(configure, url=click.prompt("Url"), username=click.prompt("Username"), password=click.prompt("Password"))
 		repo = git.Repo('.')
-		ctx.obj = Repository(repo, Checks(repo))
+		ctx.obj = Repository(repo, RepositoryChecks(repo))
 	except git.exc.InvalidGitRepositoryError:
 		raise click.UsageError("You're not on a valid git repository")
 
