@@ -17,7 +17,8 @@ pass_repository = click.make_pass_decorator(Repository)
 def cr(ctx):
 	try:
 		if (not os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + "/settings.py")):
-			ctx.invoke(configure)
+			click.echo("Please inform your TFS' information\n")
+			ctx.invoke(configure, url=click.prompt("Url"), username=click.prompt("Username"), password=click.prompt("Password"))
 		repo = git.Repo('.')
 		ctx.obj = Repository(repo, Checks(repo))
 	except git.exc.InvalidGitRepositoryError:
@@ -58,15 +59,12 @@ def share(repository):
 def update(repository):
 	repository.update_feature()
 
-@cr.command(short_help="Edit instalation configuration")
-#@click.option("--url", prompt=True)
-#@click.option("--username", "-u", prompt=True)
-#@click.option("--password", "-p", prompt=True)
-def configure(): # url, username, password):
-	url = "http://tfs01:8080/tfs/DigithoBrasil/Solu%C3%A7%C3%B5es%20em%20Software"
-	username = "yuriclaure"
-	password = ""
-	Configuration.load_configurations_from(url, username, password)
+@cr.command(short_help="Edit installation configuration")
+@click.option("--url", prompt=True)
+@click.option("--username", "-u", prompt=True)
+@click.option("--password", "-p", prompt=True)
+def configure(url, username, password):
+	Configuration.load_from(url, username, password)
 
 if __name__ == '__main__':
 	cr()
