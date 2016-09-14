@@ -2,13 +2,11 @@ import click
 import random
 import git
 import os
-from repository_checks import RepositoryChecks
+from repository_utils import RepositoryUtils
 from repository import Repository
 from configuration import Configuration
 from utils import Utils
-
-def has_pull_request():
-	return False
+from error import Error
 
 pass_repository = click.make_pass_decorator(Repository)
 
@@ -18,13 +16,13 @@ pass_repository = click.make_pass_decorator(Repository)
 def cr(ctx):
 	try:
 		if (not Utils.file_exists("settings.py")):
-			click.echo("Please inform your TFS' information\n")
+			Utils.print_encoded("Please inform your TFS' information\n")
 			ctx.invoke(configure, url=click.prompt("Url"), username=click.prompt("Username"), password=click.prompt("Password"))
 			ctx.exit()
 		repo = git.Repo('.')
-		ctx.obj = Repository(repo, RepositoryChecks(repo))
+		ctx.obj = Repository(repo, RepositoryUtils(repo))
 	except git.exc.InvalidGitRepositoryError:
-		raise click.UsageError("You're not on a valid git repository")
+		Error.abort("You're not on a valid git repository")
 
 @cr.command(short_help="List, create, or finish a feature")
 @click.argument("feature_name", required=False)
@@ -45,7 +43,7 @@ def move(repository, feature_name):
 	repository.move_to_feature(feature_name)
 
 @cr.command(short_help="Creates/updates a pull request for feature")
-@click.option("--title", "-t", prompt=not has_pull_request())
+@click.option("--title", "-t")
 @click.option('--hotfix', is_flag=True)
 @pass_repository
 def review(repository, title, hotfix):

@@ -2,22 +2,29 @@ import os
 import click
 import sys
 import unicodedata
+import colorama
 
 class Utils:
 
 	@staticmethod
-	def print_encoded(string):
-		if (sys.stdout.encoding == "cp1252"):
-			click.echo(string.encode("UTF-8").decode("ISO-8859-1"))
+	def print_encoded(string, nl=True):
+		end = "\n" if nl else ""
+		if sys.stdout.encoding == "cp1252":
+			print(string.encode("UTF-8").decode("ISO-8859-1"), end=end, flush=True)
 		else:
-			click.echo(string)
+			colorama.init()
+			print(string, end=end, flush=True)
+			colorama.deinit()
 
 	@staticmethod
-	def create_branch_name_from_title(string):
+	def create_feature_name_from_title(string):
+		string = string.replace(".", "_").replace("~", "").replace("^", "").replace(":", "_").replace(" ", "_")
 		nkfd_form = unicodedata.normalize('NFKD', string)
 		string_without_accents = u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
-		return string_without_accents.lower().replace(" ", "_")
+		return string_without_accents.lower()
 
 	@staticmethod
 	def file_exists(filename):
 		return os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + "/" + filename)
+
+	
