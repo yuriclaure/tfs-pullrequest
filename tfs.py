@@ -3,6 +3,7 @@ from requests_ntlm import HttpNtlmAuth
 from utils import Utils
 from enum import Enum
 import itertools
+import click
 import sys
 from dateutil import parser
 if Utils.file_exists("settings.py"):
@@ -41,6 +42,9 @@ class Tfs:
 	def get_pull_requests(repository_name, baseUrl = None, username = None, password = None):
 		baseUrl = settings.url if baseUrl == None else baseUrl
 		auth = Tfs.__get_auth(username, password)
+		if repository_name not in settings.repo_id: 
+			click.echo(click.style("ALERT: Couldn't find this repository on your TFS\n", fg='red'))
+			return []
 		active_pull_requests = requests.get(baseUrl + '/_apis/git/repositories/' + settings.repo_id[repository_name] + '/pullRequests?api-version=2.0&status=active', auth=auth).json()['value']
 		completed_pull_requests = requests.get(baseUrl + '/_apis/git/repositories/' + settings.repo_id[repository_name] + '/pullRequests?api-version=2.0&status=completed', auth=auth).json()['value']
 		abandoned_pull_requests = requests.get(baseUrl + '/_apis/git/repositories/' + settings.repo_id[repository_name] + '/pullRequests?api-version=2.0&status=abandoned', auth=auth).json()['value']

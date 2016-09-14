@@ -45,4 +45,3 @@ class Configuration():
 			f.write("repo_id = {}\n")
 			for project in json['value']:
 				f.write("repo_id['" + project['name'].lower() + "'] = '" + project['id'] + "'\n")
-		import settings

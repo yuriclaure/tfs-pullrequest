@@ -20,6 +20,7 @@ def cr(ctx):
 		if (not Utils.file_exists("settings.py")):
 			click.echo("Please inform your TFS' information\n")
 			ctx.invoke(configure, url=click.prompt("Url"), username=click.prompt("Username"), password=click.prompt("Password"))
+			ctx.exit()
 		repo = git.Repo('.')
 		ctx.obj = Repository(repo, RepositoryChecks(repo))
 	except git.exc.InvalidGitRepositoryError:
