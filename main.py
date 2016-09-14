@@ -7,6 +7,7 @@ from repository import Repository
 from configuration import Configuration
 from utils import Utils
 from error import Error
+from tfs import Tfs
 
 pass_repository = click.make_pass_decorator(Repository)
 
@@ -15,12 +16,12 @@ pass_repository = click.make_pass_decorator(Repository)
 @click.pass_context
 def cr(ctx):
 	try:
-		if (not Utils.file_exists("settings.py")):
+		if (not Configuration.exists()):
 			Utils.print_encoded("Please inform your TFS' information\n")
 			ctx.invoke(configure, url=click.prompt("Url"), username=click.prompt("Username"), password=click.prompt("Password"))
 			ctx.exit()
 		repo = git.Repo('.')
-		ctx.obj = Repository(repo, RepositoryUtils(repo))
+		ctx.obj = Repository(repo, RepositoryUtils(repo), Tfs(Configuration.load()))
 	except git.exc.InvalidGitRepositoryError:
 		Error.abort("You're not on a valid git repository")
 
@@ -64,7 +65,7 @@ def update(repository):
 @click.option("--username", "-u", prompt=True)
 @click.option("--password", "-p", prompt=True)
 def configure(url, username, password):
-	Configuration.load_from(url, username, password)
+	Configuration.save_from(url, username, password)
 
 if __name__ == '__main__':
 	cr()

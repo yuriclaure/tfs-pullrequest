@@ -59,8 +59,5 @@ docs/_build/
 # PyBuilder
 target/
 
-#Ipython Notebook
+# Ipython Notebook
 .ipynb_checkpoints
-
-# Project user configuration files
-settings.py

@@ -1,13 +1,21 @@
 import os
+import yaml
 import click
 import requests
 from tfs import Tfs
 from requests_ntlm import HttpNtlmAuth
 
 class Configuration():
+	file_path = os.path.join(click.get_app_dir("Codereview"), "settings.yaml")
 
 	@staticmethod
-	def load_from(baseUrl, username, password):
+	def load():
+		if not Configuration.exists(): return {}
+		stream = open(Configuration.file_path, 'r')
+		return yaml.load(stream)
+
+	@staticmethod
+	def save_from(baseUrl, username, password):
 		baseUrl = baseUrl[:-1] if baseUrl.endswith("/") else baseUrl
 		response = Tfs.get_projects(baseUrl, username, password)
 
@@ -20,6 +28,10 @@ class Configuration():
 
 		Configuration.__write_settings_file(baseUrl, username, password, response.json())
 		click.echo("\nNew settings loaded successfully")
+
+	@staticmethod
+	def exists():
+		return os.path.isfile(Configuration.file_path)
 
 	@staticmethod
 	def __prompt_user_info():
@@ -37,11 +49,15 @@ class Configuration():
 
 	@staticmethod
 	def __write_settings_file(url, username, password, json):
-		with open(os.path.dirname(os.path.realpath(__file__)) + "/settings.py", 'w') as f:
-			f.write("url = '" + url.replace("/" + url.split('/')[-1], "") + "'\n")
-			f.write("username = '" + username + "'\n")
-			f.write("password = '" + password + "'\n\n")
+		data = {}
+		data['url'] = url.replace("/" + url.split('/')[-1], "")
+		data['username'] = username
+		data['password'] = password
+		data['repo_id'] = {}
+		for project in json['value']:
+			data['repo_id'][project['name'].lower()] = project['id']
 
-			f.write("repo_id = {}\n")
-			for project in json['value']:
-				f.write("repo_id['" + project['name'].lower() + "'] = '" + project['id'] + "'\n")
+		if not os.path.exists(click.get_app_dir("Codereview")):
+			os.makedirs(click.get_app_dir("Codereview"))
+		stream = open(Configuration.file_path, 'w')
+		yaml.dump(data, stream)

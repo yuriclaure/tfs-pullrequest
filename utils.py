@@ -1,5 +1,3 @@
-import os
-import click
 import sys
 import unicodedata
 import colorama
@@ -22,9 +20,5 @@ class Utils:
 		nkfd_form = unicodedata.normalize('NFKD', string)
 		string_without_accents = u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 		return string_without_accents.lower()
-
-	@staticmethod
-	def file_exists(filename):
-		return os.path.isfile(os.path.dirname(os.path.realpath(__file__)) + "/" + filename)
 
 	

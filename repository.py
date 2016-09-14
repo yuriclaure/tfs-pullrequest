@@ -1,7 +1,6 @@
 import click
 from git import Repo
 from utils import Utils
-from tfs import *
 from tabulate import tabulate
 from error import Error
 from confirmation import Confirmation
@@ -9,10 +8,11 @@ import colorama
 
 class Repository:
 
-	def __init__(self, repo, utils):
+	def __init__(self, repo, utils, tfs):
 		self.repo = repo
 		self.git = repo.git
 		self.utils = utils
+		self.tfs = tfs
 
 	def create_feature(self, feature_name):
 		self.utils.assert_is_not_dirty()
@@ -27,7 +27,7 @@ class Repository:
 	def list_features(self):
 		current_feature = self.utils.current_feature_name()
 		features = [head.name for head in filter(lambda h: h.name != "master", self.repo.heads)]
-		pull_request_details = Tfs.get_pull_request_details(self.utils.current_repo_name(), features)
+		pull_request_details = self.tfs.get_pull_request_details(self.utils.current_repo_name(), features)
 
 		table_of_features = []
 		for pr_detail in pull_request_details:
@@ -46,7 +46,7 @@ class Repository:
 		self.utils.assert_is_not_dirty()
 		self.utils.assert_feature_exists(feature_name)
 		Error.abort_if(feature_name == "master", "You cannot finish your master feature")
-		Error.abort_if(Tfs.has_active_pull_request(repo_name, feature_name), "You have an active pull request on that branch.\nPlease complete it or abandon it to continue")
+		Error.abort_if(self.tfs.has_active_pull_request(repo_name, feature_name), "You have an active pull request on that branch.\nPlease complete it or abandon it to continue")
 		Confirmation.show_if(self.utils.has_unpushed_commits(feature_name), "You have unpushed commits on this branch")
 
 		if feature_name == self.utils.current_feature_name():
@@ -71,9 +71,9 @@ class Repository:
 			self.create_feature(current_feature)
 
 		self.share_feature(silent=True)
-		if not Tfs.has_active_pull_request(repo_name, current_feature):
+		if not self.tfs.has_active_pull_request(repo_name, current_feature):
 			if not title: title = self.utils.obtain_pull_request_title_from_last_commit()
-			response = Tfs.create_pull_request(repo_name, current_feature, title)
+			response = self.tfs.create_pull_request(repo_name, current_feature, title)
 			Error.abort_if(response.status_code != 201, "Request error - HTTP_CODE: " + str(response.status_code) + "\n\n" + response.json()["message"] if "message" in response.json() else "")
 			Utils.print_encoded(click.style("Pull request successfully created", bold=True))
 		else:
