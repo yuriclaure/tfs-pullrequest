@@ -5,6 +5,7 @@ from enum import Enum
 import itertools
 import click
 import sys
+import colorama
 from dateutil import parser
 if Utils.file_exists("settings.py"):
 	import settings
@@ -43,7 +44,9 @@ class Tfs:
 		baseUrl = settings.url if baseUrl == None else baseUrl
 		auth = Tfs.__get_auth(username, password)
 		if repository_name not in settings.repo_id: 
-			click.echo(click.style("ALERT: Couldn't find this repository on your TFS\n", fg='red'))
+			print('\033[31m' + 'some red text')
+			print('\033[0m')
+			print(click.style("ALERT: Couldn't find this repository on your TFS\n", fg='red'))
 			return []
 		active_pull_requests = requests.get(baseUrl + '/_apis/git/repositories/' + settings.repo_id[repository_name] + '/pullRequests?api-version=2.0&status=active', auth=auth).json()['value']
 		completed_pull_requests = requests.get(baseUrl + '/_apis/git/repositories/' + settings.repo_id[repository_name] + '/pullRequests?api-version=2.0&status=completed', auth=auth).json()['value']
