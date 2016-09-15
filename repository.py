@@ -1,4 +1,5 @@
 import click
+import git
 from git import Repo
 from utils import Utils
 from tabulate import tabulate
@@ -17,12 +18,16 @@ class Repository:
 	def create_feature(self, feature_name):
 		self.utils.assert_is_not_dirty()
 		self.utils.assert_feature_does_not_exists(feature_name)
-		self.git.checkout("-B", feature_name, "master")
-		self.git.checkout("master")
-		self.repo.head.reset(commit="origin/master", working_tree=True)
-		self.git.checkout(feature_name)
+		try:
+			self.git.checkout("-B", feature_name, "master")
+			self.git.checkout("master")
+			self.repo.head.reset(commit="origin/master", working_tree=True)
+			self.git.checkout(feature_name)
 
-		Utils.print_encoded(click.style("New feature created successfully", bold=True))
+			Utils.print_encoded(click.style("New feature created successfully", bold=True))
+		except git.exc.GitCommandError as command_error:
+			if not silent:
+				Utils.print_encoded(command_error.stderr.decode("UTF-8"))
 
 	def list_features(self):
 		current_feature = self.utils.current_feature_name()
@@ -39,7 +44,7 @@ class Repository:
 
 		Utils.print_encoded(tabulate(table_of_features, headers=["", "Status", "Feature", "Pull request title"]))		
 
-	def finish_feature(self, feature_name):
+	def finish_feature(self, feature_name, delete_on_remote=False):
 		repo_name = self.utils.current_repo_name()
 		if not feature_name: 
 			feature_name = self.utils.current_feature_name()
@@ -51,16 +56,26 @@ class Repository:
 
 		if feature_name == self.utils.current_feature_name():
 			self.move_to_feature("master")
-		self.git.branch("-D", feature_name)
 
-		Utils.print_encoded("Finished feature " + click.style(feature_name, bold=True))
+		try:
+			self.git.branch("-D", feature_name)
+			if delete_on_remote:
+				self.git.push("origin", "--delete", feature_name)
+
+			Utils.print_encoded("Finished feature " + click.style(feature_name, bold=True))
+		except git.exc.GitCommandError as command_error:
+			if not silent:
+				Utils.print_encoded(command_error.stderr.decode("UTF-8"))
 
 	def move_to_feature(self, feature_name):
 		self.utils.assert_is_not_dirty()
 		self.utils.assert_feature_exists(feature_name)
-		self.git.checkout(feature_name)
-
-		Utils.print_encoded("Moved to feature " + click.style(feature_name, bold=True))
+		try:
+			self.git.checkout(feature_name)
+			Utils.print_encoded("Moved to feature " + click.style(feature_name, bold=True))
+		except git.exc.GitCommandError as command_error:
+			if not silent:
+				Utils.print_encoded(command_error.stderr.decode("UTF-8"))
 
 	def review_feature(self, title, hotfix):
 		repo_name = self.utils.current_repo_name()
@@ -73,21 +88,36 @@ class Repository:
 		self.share_feature(silent=True)
 		if not self.tfs.has_active_pull_request(repo_name, current_feature):
 			if not title: title = self.utils.obtain_pull_request_title_from_last_commit()
+			if hotfix: title = '[HOTFIX] ' + title
 			response = self.tfs.create_pull_request(repo_name, current_feature, title)
 			Error.abort_if(response.status_code != 201, "Request error - HTTP_CODE: " + str(response.status_code) + "\n\n" + response.json()["message"] if "message" in response.json() else "")
 			Utils.print_encoded(click.style("Pull request successfully created", bold=True))
 		else:
 			Utils.print_encoded(click.style("Pull request successfully updated", bold=True))
 
+		if hotfix:
+			self.tfs.approve_pull_request(repo_name, current_feature)
+			Utils.print_encoded(click.style("[HOTFIX] ", bold=True, fg="red") + click.style("Pull request successfully merged into master", bold=True))
+			self.finish_feature(current_feature, delete_on_remote=True)
+
 	def share_feature(self, silent=False):
 		current_feature = self.utils.current_feature_name()
 		Error.abort_if(current_feature == "master", "You cannot push changes on master")
-		output = self.git.push("--set-upstream", "origin", current_feature)
-		if not silent:
-			Utils.print_encoded(output)
+		try:
+			output = self.git.push("--set-upstream", "origin", current_feature)
+			if not silent:
+				Utils.print_encoded(output)
+		except git.exc.GitCommandError as command_error:
+			if not silent:
+				Utils.print_encoded(command_error.stderr.decode("UTF-8"))
+
 
 	def update_feature(self, silent=False):
-		output = self.git.pull("origin", "master")
-		if not silent:
-			Utils.print_encoded(output)
+		try:
+			output = self.git.pull("origin", "master")
+			if not silent:
+				Utils.print_encoded(output)
+		except git.exc.GitCommandError as command_error:
+			if not silent:
+				Utils.print_encoded(command_error.stderr.decode("UTF-8"))
 

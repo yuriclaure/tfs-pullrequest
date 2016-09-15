@@ -50,6 +50,7 @@ class Configuration():
 	@staticmethod
 	def __write_settings_file(url, username, password, json):
 		data = {}
+		data['project'] = url.split('/')[-1]
 		data['url'] = url.replace("/" + url.split('/')[-1], "")
 		data['username'] = username
 		data['password'] = password
