@@ -5,11 +5,11 @@
 #define MyDefaultDirName "{pf}\Codereview"
 
 [Files]
-Source: cr\*; DestDir: {app}; Flags: overwritereadonly recursesubdirs createallsubdirs
+Source: ..\dist\cr\*; DestDir: {app}; Flags: overwritereadonly recursesubdirs createallsubdirs
 
 [Setup]
 AppId={{444B4311-848B-4EA8-B743-51DE98FF6700}
-OutputDir=.
+OutputDir=..\dist
 AppName={#MyAppName}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={#MyDefaultDirName}
