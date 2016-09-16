@@ -17,9 +17,9 @@ AppVersion={#MyAppVersion}
 OutputBaseFilename={#MyAppExeName}
 
 [Registry]
-Root: HKLM; Subkey: SYSTEM\CurrentControlSet\Control\Session Manager\Environment; \
-    ; ValueType: expandsz; ValueName: Path; ValueData: "{olddata};{#MyDefaultDirName}"; \
-    ; Check: NeedsAddPath('{#MyDefaultDirName}')
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+    ValueType: expandsz; ValueName: Path; ValueData: "{olddata};{#MyDefaultDirName}"; \
+    Check: NeedsAddPath('{#MyDefaultDirName}')
 
 [Code]
 
