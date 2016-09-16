@@ -49,6 +49,7 @@ class RepositoryUtils:
 		while ord(c) != 10:
 			if c == 'e':
 				title = click.prompt("Title: ", type=click.STRING)
+				title = title.encode("ISO-8859-1").decode("UTF-8")
 				break
 			Utils.print_encoded(click.style("Invalid option", bold=True, fg='red'))
 			Utils.print_encoded("Press (enter) to continue or (e) to edit: ", nl=False)
