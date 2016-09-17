@@ -17,24 +17,25 @@ AppVersion={#MyAppVersion}
 OutputBaseFilename={#MyAppExeName}
 
 [Registry]
+Root: HKCU; Subkey: "Environment"; \
+    ValueType: expandsz; ValueName: PATH; ValueData: "{olddata};{#MyDefaultDirName}"; \
+    Check: NeedsAddPath   
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
     ValueType: expandsz; ValueName: Path; ValueData: "{olddata};{#MyDefaultDirName}"; \
-    Check: NeedsAddPath('{#MyDefaultDirName}')
+    Check: NeedsAddPath
 
 [Code]
 
-function NeedsAddPath(Param: string): boolean;
+function NeedsAddPath(): boolean;
 var
   OrigPath: string;
 begin
-  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,
-    'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
-    'Path', OrigPath)
+  if not RegQueryStringValue(HKEY_LOCAL_MACHINE,'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'Path', OrigPath)
   then begin
     Result := True;
     exit;
   end;
   // look for the path with leading and trailing semicolon
   // Pos() returns 0 if not found
-  Result := Pos(';' + Param + ';', ';' + OrigPath + ';') = 0;
+  Result := Pos(';' + UpperCase(ExpandConstant('{#MyDefaultDirName}')) + ';', ';' + UpperCase(OrigPath) + ';') = 0;
 end;
