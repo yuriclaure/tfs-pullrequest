@@ -17,7 +17,7 @@ class Configuration():
 	@staticmethod
 	def save_from(baseUrl, username, password):
 		baseUrl = baseUrl[:-1] if baseUrl.endswith("/") else baseUrl
-		authMethod = "basic" if baseUrl.split('/')[3].endswith("visualstudio.com") else "ntlm"
+		authMethod = "basic" if baseUrl.split('/')[2].endswith("visualstudio.com") else "ntlm"
 		response = Tfs.get_projects(baseUrl, username, password, authMethod)
 		print(response.text)
 
