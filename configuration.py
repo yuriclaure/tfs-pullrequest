@@ -19,7 +19,6 @@ class Configuration():
 		baseUrl = baseUrl[:-1] if baseUrl.endswith("/") else baseUrl
 		authMethod = "basic" if baseUrl.split('/')[2].endswith("visualstudio.com") else "ntlm"
 		response = Tfs.get_projects(baseUrl, username, password, authMethod)
-		print(response.text)
 
 		while (response.status_code != 200):
 			if (response.status_code == 401):
