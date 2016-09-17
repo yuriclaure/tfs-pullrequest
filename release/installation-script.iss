@@ -1,5 +1,5 @@
 #define MyAppName "Codereview"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1"
 #define MyAppPublisher "Yuri Claure"
 #define MyAppExeName "Codereview Installer"
 #define MyDefaultDirName "{pf}\Codereview"
