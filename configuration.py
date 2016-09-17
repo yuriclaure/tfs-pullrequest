@@ -17,7 +17,9 @@ class Configuration():
 	@staticmethod
 	def save_from(baseUrl, username, password):
 		baseUrl = baseUrl[:-1] if baseUrl.endswith("/") else baseUrl
-		response = Tfs.get_projects(baseUrl, username, password)
+		authMethod = "basic" if baseUrl.split('/')[3].endswith("visualstudio.com") else "ntlm"
+		response = Tfs.get_projects(baseUrl, username, password, authMethod)
+		print(response.text)
 
 		while (response.status_code != 200):
 			if (response.status_code == 401):
@@ -26,7 +28,7 @@ class Configuration():
 				baseUrl = Configuration.__prompt_tfs_url()
 			response = Tfs.get_projects(baseUrl, username, password)
 
-		Configuration.__write_settings_file(baseUrl, username, password, response.json())
+		Configuration.__write_settings_file(baseUrl, username, password, authMethod, response.json())
 		click.echo("\nNew settings loaded successfully")
 
 	@staticmethod
@@ -48,10 +50,11 @@ class Configuration():
 		return click.prompt("Url (example: http://tfs01:8080/tfs/DefaultCollection/Solucoes)")
 
 	@staticmethod
-	def __write_settings_file(url, username, password, json):
+	def __write_settings_file(url, username, password, authMethod, json):
 		data = {}
-		data['project'] = url.split('/')[-1]
 		data['url'] = url.replace("/" + url.split('/')[-1], "")
+		data['project'] = url.split('/')[-1]
+		data['authMethod'] = authMethod
 		data['username'] = username
 		data['password'] = password
 		data['repo_id'] = {}

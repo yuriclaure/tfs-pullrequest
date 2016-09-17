@@ -1,5 +1,6 @@
 import requests
 from requests_ntlm import HttpNtlmAuth
+from requests.auth import HTTPBasicAuth
 from utils import Utils
 from enum import Enum
 from error import Error
@@ -16,8 +17,8 @@ class Tfs:
 		self.settings = settings
 
 	@staticmethod
-	def get_projects(baseUrl, username, password):
-		auth = HttpNtlmAuth(username, password)
+	def get_projects(baseUrl, username, password, authMethod):
+		auth = HTTPBasicAuth(username, password) if authMethod == "basic" else HttpNtlmAuth(username, password)
 		return requests.get(baseUrl + '/_apis/git/repositories?api-version=2.0', auth=auth)
 
 	def create_pull_request(self, repository_name, feature_name, title):
@@ -111,7 +112,10 @@ class Tfs:
 			pull_requests = self.__get_pull_requests(repository_name, feature_name, only_active=True)
 
 	def __get_auth(self):
-		return HttpNtlmAuth(self.settings['username'], self.settings['password'])
+		if self.settings['authMethod'] == "basic":
+			return HTTPBasicAuth(self.settings['username'], self.settings['password'])
+		else:
+			return HttpNtlmAuth(self.settings['username'], self.settings['password'])
 
 	def __assemble_detail(self, feature_requested, pull_requests_unique):
 		if feature_requested not in pull_requests_unique:
