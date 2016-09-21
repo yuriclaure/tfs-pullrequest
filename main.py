@@ -12,7 +12,7 @@ from tfs import Tfs
 pass_repository = click.make_pass_decorator(Repository)
 
 @click.group()
-@click.version_option('1.1', prog_name="Code review")
+@click.version_option('1.1.1', prog_name="Code review")
 @click.pass_context
 def cr(ctx):
 	try:
