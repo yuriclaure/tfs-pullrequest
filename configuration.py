@@ -25,7 +25,7 @@ class Configuration():
 				username, password = Configuration.__prompt_user_info()
 			else:
 				baseUrl = Configuration.__prompt_tfs_url()
-			response = Tfs.get_projects(baseUrl, username, password)
+			response = Tfs.get_projects(baseUrl, username, password, authMethod)
 
 		Configuration.__write_settings_file(baseUrl, username, password, authMethod, response.json())
 		click.echo("\nNew settings loaded successfully")
