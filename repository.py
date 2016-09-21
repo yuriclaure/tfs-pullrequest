@@ -27,6 +27,7 @@ class Repository:
 			Utils.print_encoded(click.style("New feature created successfully", bold=True))
 		except git.exc.GitCommandError as command_error:
 			Utils.print_encoded(command_error.stderr.decode("UTF-8"))
+			Error.abort("Couldn't create new feature")
 
 	def list_features(self):
 		current_feature = self.utils.current_feature_name()
@@ -67,6 +68,7 @@ class Repository:
 			Utils.print_encoded("Finished feature " + click.style(feature_name, bold=True))
 		except git.exc.GitCommandError as command_error:
 			Utils.print_encoded(command_error.stderr.decode("UTF-8"))
+			Error.abort("Couldn't finish feature")
 
 	def move_to_feature(self, feature_name):
 		self.utils.assert_is_not_dirty()
@@ -76,6 +78,7 @@ class Repository:
 			Utils.print_encoded("Moved to feature " + click.style(feature_name, bold=True))
 		except git.exc.GitCommandError as command_error:
 			Utils.print_encoded(command_error.stderr.decode("UTF-8"))
+			Error.abort("Couldn't move to feature")
 
 	def review_feature(self, title, hotfix):
 		repo_name = self.utils.current_repo_name()
@@ -109,7 +112,7 @@ class Repository:
 				Utils.print_encoded(output)
 		except git.exc.GitCommandError as command_error:
 			Utils.print_encoded(command_error.stderr.decode("UTF-8"))
-
+			Error.abort("Couldn't share feature")
 
 	def update_feature(self, silent=False):
 		try:
@@ -118,4 +121,4 @@ class Repository:
 				Utils.print_encoded(output)
 		except git.exc.GitCommandError as command_error:
 			Utils.print_encoded(command_error.stderr.decode("UTF-8"))
-
+			Error.abort("Couldn't update feature")
