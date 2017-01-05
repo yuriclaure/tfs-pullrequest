@@ -52,3 +52,25 @@ After that your command will be ready for using
 <code>$ cr update</code>
 
         Merge master branch into current feature and pulls any changes. (useful to resolve conflicts)
+        
+<h2>How to generate distribution (for those seeking to help with the project)</h2>
+
+You will need to install [PyInstaller](http://www.pyinstaller.org/) and [InnoSetup](http://www.jrsoftware.org/isinfo.php).
+
+Then, follow these steps to generate the windows installer:
+
+1. Change the version of the software on *main.py* and */release/installation-script.iss*, based on the release version you want to create.
+
+2. Go to the root folder (the repository root) and execute the following command: 
+
+   ```bash
+   $ pyinstaller -n cr main.py -y
+   ```
+   This wil generate the files you need to install on the clients computer, you can see them on */dist/cr/*
+             
+   *pyinstaller is an alias for* **python pyinstaller.py**
+3. Open the InnoSetup file located on */release/installation-script.iss*
+
+   Execute it, it will generate the installer called Codereview Installer.exe located on the /dist folder.
+   
+4. Create a new release on GitHub with the same release version you set up on step one, and upload the windows installer. I generally also upload a zip file containing the contents from the */dist/cr* folder so you have the option of just copying the files.
