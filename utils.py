@@ -16,7 +16,7 @@ class Utils:
 
 	@staticmethod
 	def create_feature_name_from_title(string):
-		string = string.replace(".", "_").replace("~", "").replace("^", "").replace(":", "_").replace(" ", "_").replace(",", "_").replace("/", "").replace("\\", "")
+		string = string.replace(".", "_").replace("~", "").replace("^", "").replace(":", "_").replace(" ", "_").replace(",", "_").replace("/", "").replace("\\", "").replace("'", "").replace("\"", "")
 		nkfd_form = unicodedata.normalize('NFKD', string)
 		string_without_accents = u"".join([c for c in nkfd_form if not unicodedata.combining(c)])
 		return string_without_accents.lower()

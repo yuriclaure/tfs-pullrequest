@@ -1,5 +1,6 @@
 import click
 import git
+import time
 from git import Repo
 from utils import Utils
 from tabulate import tabulate
@@ -101,6 +102,7 @@ class Repository:
 		if hotfix:
 			self.tfs.approve_pull_request(repo_name, current_feature)
 			Utils.print_encoded(click.style("[HOTFIX] ", bold=True, fg="red") + click.style("Pull request successfully merged into master", bold=True))
+			time.sleep(0.5)
 			self.finish_feature(current_feature, delete_on_remote=True)
 
 	def share_feature(self, silent=False):
@@ -109,7 +111,7 @@ class Repository:
 		try:
 			output = self.git.push("--set-upstream", "origin", current_feature)
 			if not silent:
-				Utils.print_encoded(output)
+				Utils.print_encoded(click.style("Feature shared successfully", bold=True))
 		except git.exc.GitCommandError as command_error:
 			Utils.print_encoded(command_error.stderr.decode("UTF-8"))
 			Error.abort("Couldn't share feature")
@@ -118,7 +120,11 @@ class Repository:
 		try:
 			output = self.git.pull("origin", "master")
 			if not silent:
-				Utils.print_encoded(output)
+				Utils.print_encoded(click.style("\nFeature successfully updated", bold=True))
 		except git.exc.GitCommandError as command_error:
-			Utils.print_encoded(command_error.stderr.decode("UTF-8"))
-			Error.abort("Couldn't update feature")
+			if command_error.status == 1:
+				Utils.print_encoded(click.style("\nFeature updated but conflicts were found", bold=True))
+				Utils.print_encoded(click.style("Fix them up in the work tree, and then use 'git add/rm <file>' as appropriate"))
+			else:
+				Utils.print_encoded(command_error.stderr.decode("UTF-8"))
+				Error.abort("Couldn't update feature")

@@ -44,17 +44,12 @@ class RepositoryUtils:
 		title = self.repo.head.commit.message[:-1]
 
 		Utils.print_encoded("Pull request title: " + click.style(title, bold=True) + " (obtained from last commit message)")
-		Utils.print_encoded("Press (enter) to continue or (e) to edit: ", nl=False)
-		c = sys.stdin.readline()[0]
-		while ord(c) != 10:
-			if c == 'e':
-				title = click.prompt("Title: ", type=click.STRING)
-				title = title.encode("ISO-8859-1").decode("UTF-8")
-				break
-			Utils.print_encoded(click.style("Invalid option", bold=True, fg='red'))
-			Utils.print_encoded("Press (enter) to continue or (e) to edit: ", nl=False)
-			c = sys.stdin.readline()[0]
+		Utils.print_encoded("Press (enter) to accept or type new title: ", nl=False)
+		new_title = sys.stdin.readline()
 
-		return title
+		if ord(new_title[0]) == 10:
+			return title
+		else:
+			return new_title[:-1].encode("ISO-8859-1").decode("UTF-8")
 
 
