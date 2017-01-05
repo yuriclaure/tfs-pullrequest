@@ -1,11 +1,12 @@
 #define MyAppName "Codereview"
-#define MyAppVersion "1.2"
+#define MyAppVersion "1.2.1"
 #define MyAppPublisher "Yuri Claure"
 #define MyAppExeName "Codereview Installer"
 #define MyDefaultDirName "{pf}\Codereview"
 
 [Files]
 Source: ..\dist\cr\*; DestDir: {app}; Flags: overwritereadonly recursesubdirs createallsubdirs
+Source: .\cr-autocomplete.sh; DestDir: {app}; Flags: overwritereadonly recursesubdirs createallsubdirs; AfterInstall: AfterInstallProc 
 
 [Setup]
 AppId={{444B4311-848B-4EA8-B743-51DE98FF6700}
@@ -39,3 +40,19 @@ begin
   // Pos() returns 0 if not found
   Result := Pos(';' + UpperCase(ExpandConstant('{#MyDefaultDirName}')) + ';', ';' + UpperCase(OrigPath) + ';') = 0;
 end;
+
+procedure AfterInstallProc;
+var
+  ProgramPath: string;
+begin
+  ProgramPath := ExpandConstant('{app}');
+  StringChangeEx(ProgramPath, ':', '', True);
+  StringChangeEx(ProgramPath, '\', '/', True);
+  StringChangeEx(ProgramPath, ' ', '\ ', True);
+  StringChangeEx(ProgramPath, '(', '\(', True);
+  StringChangeEx(ProgramPath, ')', '\)', True);
+
+  SaveStringToFile('C:\Users\' + ExpandConstant('{username}') + '\.bash_profile', #13#10 + 'source /' + ProgramPath + '/cr-autocomplete.sh' + #13#10, True);
+end;
+
+
